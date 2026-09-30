@@ -18,13 +18,14 @@ const app = express();
 
 const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:3000")
   .split(",")
-  .map((s) => s.trim());
+  .map((s) => s.trim().replace(/\/$/, ""));
 
 app.use(
   cors({
     origin: (origin, cb) => {
       if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
-      cb(new Error("Not allowed by CORS"));
+      console.warn("CORS blocked origin:", origin);
+      return cb(null, false); // error throw nahi, bas CORS headers nahi milenge
     },
     credentials: true,
   }),
