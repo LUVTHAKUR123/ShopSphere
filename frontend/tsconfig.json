@@ -27,7 +27,8 @@
     "**/*.ts",
     "**/*.tsx",
     "**/*.d.ts",
-    ".next/types/**/*.ts"
-, "src/components/policies/PolicyPageLayout.tsx"  ],
+    ".next/types/**/*.ts",
+    "src/components/policies/PolicyPageLayout.tsx"
+  ],
   "exclude": ["node_modules"]
 }

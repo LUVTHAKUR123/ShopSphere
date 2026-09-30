@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import api from "@/lib/api";
 export default function Navbar() {
   const [wishlistCount, setWishlistCount] = useState(0);
@@ -10,8 +10,27 @@ export default function Navbar() {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showAccountMenu, setShowAccountMenu] = useState(false);
   const { user, logout, loading } = useAuth();
   const router = useRouter();
+  const accountMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        accountMenuRef.current &&
+        !accountMenuRef.current.contains(event.target as Node)
+      ) {
+        setShowAccountMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     const query = searchQuery.trim();
@@ -120,29 +139,59 @@ export default function Navbar() {
   return (
     <>
       {/* Topbar */}
-      <div className="ss-topbar text-center py-2">
-        Free shipping on all orders over ₹999 &nbsp;•&nbsp; Sale is live, up to
-        60% off
+      <div className="ss-topbar text-center py-2 px-2 small">
+        Free shipping on all orders over ₹999
+        <span className="mx-2">•</span>
+        Sale is live, up to <strong>60% off</strong>
       </div>
 
       {/* Navbar */}
-      <nav className="navbar navbar-expand-lg navbar-dark ss-navbar px-3 py-3">
-        <div className="container">
-          {/* Logo */}
-          <Link className="navbar-brand fw-bold fs-4" href="/products">
-            <i className="bi bi-bag-heart-fill me-2"></i>
-            ShopSphere
+      <nav className="navbar navbar-dark ss-navbar py-2">
+        <div className="container-fluid px-3 px-lg-4">
+          {/* ================= LOGO ================= */}
+          <Link
+            href="/products"
+            className="navbar-brand fw-bold d-flex align-items-center me-3"
+          >
+            <span
+              style={{
+                width: "34px",
+                height: "34px",
+                display: "inline-flex",
+                borderRadius: "13px",
+                alignItems: "center",
+                justifyContent: "center",
+                overflow: "hidden",
+                flexShrink: 0,
+              }}
+            >
+              <img
+                src="/images/Shopsphere.png"
+                alt="ShopSphere"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "contain",
+                  display: "block",
+                }}
+              />
+            </span>
+            {/* Desktop / Tablet: Show name */}
+            <span className="ms-2 d-none d-sm-inline">ShopSphere</span>
           </Link>
-          {/* Global Search */}
+
+          {/* ================= SEARCH ================= */}
           <div
-            className="position-relative flex-grow-1 mx-lg-4 my-3 my-lg-0"
-            style={{ maxWidth: "500px", minWidth: 0 }}
+            ref={accountMenuRef}
+            className="position-relative "
+            style={{ maxWidth: "550px", minWidth: 0 }}
           >
             <form
               onSubmit={(e) => {
                 e.preventDefault();
 
                 const query = searchQuery.trim();
+
                 if (!query) return;
 
                 setShowDropdown(false);
@@ -156,7 +205,7 @@ export default function Navbar() {
               <div className="input-group">
                 <input
                   type="search"
-                  className="form-control rounded-start-pill ps-4"
+                  className="form-control rounded-start-pill ps-3"
                   placeholder="Search for products..."
                   value={searchQuery}
                   onChange={(e) => {
@@ -169,7 +218,7 @@ export default function Navbar() {
 
                 <button
                   type="submit"
-                  className="btn btn-primary rounded-end-pill px-4"
+                  className="btn btn-primary rounded-end-pill px-3 px-lg-4"
                   aria-label="Search"
                 >
                   <i className="bi bi-search"></i>
@@ -177,7 +226,7 @@ export default function Navbar() {
               </div>
             </form>
 
-            {/* Search Dropdown */}
+            {/* ================= SEARCH DROPDOWN ================= */}
             {showDropdown && searchQuery.trim().length >= 2 && (
               <div
                 className="position-absolute bg-white shadow-lg border rounded-4 mt-2 overflow-hidden"
@@ -205,7 +254,9 @@ export default function Navbar() {
                       const imageSrc = product.image_data
                         ? product.image_data.startsWith("data:")
                           ? product.image_data
-                          : `data:${product.image_mime_type || "image/jpeg"};base64,${product.image_data}`
+                          : `data:${
+                              product.image_mime_type || "image/jpeg"
+                            };base64,${product.image_data}`
                         : product.image_url || product.image || "";
 
                       return (
@@ -215,10 +266,12 @@ export default function Navbar() {
                           onClick={() => setShowDropdown(false)}
                           className="d-flex align-items-center gap-3 px-3 py-2 text-decoration-none text-dark border-top"
                         >
-                          {/* Product Image */}
                           <div
                             className="rounded-3 bg-light d-flex align-items-center justify-content-center flex-shrink-0"
-                            style={{ width: "60px", height: "60px" }}
+                            style={{
+                              width: "60px",
+                              height: "60px",
+                            }}
                           >
                             {imageSrc ? (
                               <img
@@ -236,7 +289,6 @@ export default function Navbar() {
                             )}
                           </div>
 
-                          {/* Product Details */}
                           <div className="flex-grow-1 overflow-hidden">
                             <div className="fw-semibold text-truncate">
                               {product.name}
@@ -258,7 +310,9 @@ export default function Navbar() {
                     <Link
                       href={{
                         pathname: "/products",
-                        query: { search: searchQuery.trim() },
+                        query: {
+                          search: searchQuery.trim(),
+                        },
                       }}
                       onClick={() => setShowDropdown(false)}
                       className="d-block text-center text-primary fw-semibold text-decoration-none py-3 border-top"
@@ -270,9 +324,11 @@ export default function Navbar() {
                 ) : (
                   <div className="text-center py-4 px-3">
                     <i className="bi bi-search fs-3 text-secondary"></i>
+
                     <p className="fw-semibold mt-2 mb-1 text-dark">
                       No products found
                     </p>
+
                     <p className="text-secondary small mb-0">
                       Try searching with a different product name.
                     </p>
@@ -282,72 +338,186 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Navigation Links */}
-          <div className="ms-auto d-flex gap-3 align-items-center flex-wrap">
-            <Link className="nav-link text-white" href="/products">
-              Shop
+          {/* ================= NAVIGATION ================= */}
+          <div className="d-flex align-items-center gap-0.5 gap-lg-3 flex-shrink-0">
+            {/* Shop */}
+            <Link
+              href="/products"
+              className="text-white text-decoration-none d-none d-md-flex align-items-center gap-1 fw-semibold"
+            >
+              <i className="bi bi-grid-3x3-gap-fill"></i>
+              <span>Shop</span>
             </Link>
 
             {/* Wishlist */}
             <Link
               href="/wishlist"
-              className="nav-link text-white d-flex align-items-center gap-1"
+              className="text-white text-decoration-none position-relative d-flex align-items-center gap-1 fw-semibold"
             >
-              <i className="bi bi-heart position-relative">
-                {wishlistCount > 0 && (
-                  <span className="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle">
-                    {wishlistCount}
-                  </span>
-                )}
-              </i>
-              <span>Wishlist</span>
+              <i className="bi bi-heart fs-5"></i>
+
+              <span className="d-none d-lg-inline">Wishlist</span>
+
+              {wishlistCount > 0 && (
+                <span
+                  className="badge rounded-pill bg-danger position-absolute"
+                  style={{
+                    top: "-10px",
+                    right: "-8px",
+                    fontSize: "10px",
+                  }}
+                >
+                  {wishlistCount}
+                </span>
+              )}
             </Link>
 
-            {/* Admin */}
-            {user?.is_admin && (
-              <Link className="nav-link text-white" href="/admin">
-                Admin
-              </Link>
-            )}
-
-            {/* Authentication */}
+            {/* ================= ACCOUNT ================= */}
             {loading ? (
               <div
-                style={{ width: "100px", minHeight: "32px" }}
-                aria-hidden="true"
+                style={{
+                  width: "40px",
+                  height: "32px",
+                }}
               />
             ) : user ? (
-              <>
-                <Link className="nav-link text-white" href="/profile">
-                  <i className="bi bi-person-circle me-1"></i>
-                  {user.name}
-                </Link>
-
+              <div className="position-relative">
                 <button
-                  className="btn btn-outline-light btn-sm"
-                  onClick={handleLogout}
+                  type="button"
+                  className="btn text-white p-1 d-flex align-items-center gap-1"
+                  onClick={() => setShowAccountMenu((prev) => !prev)}
+                  aria-expanded={showAccountMenu}
                 >
-                  Logout
+                  <i className="bi bi-person-circle fs-5"></i>
+
+                  {/* Desktop name */}
+                  <span className="d-none d-lg-inline fw-semibold">
+                    {user.name}
+                  </span>
+
+                  <i
+                    className={`bi ${
+                      showAccountMenu ? "bi-chevron-up" : "bi-chevron-down"
+                    } d-none d-lg-inline`}
+                    style={{ fontSize: "11px" }}
+                  ></i>
                 </button>
-              </>
+
+                {/* ACCOUNT DROPDOWN */}
+                {showAccountMenu && (
+                  <div
+                    className="position-absolute bg-white shadow-lg rounded-4 overflow-hidden"
+                    style={{
+                      top: "calc(100% + 10px)",
+                      right: 0,
+                      width: "210px",
+                      zIndex: 1100,
+                    }}
+                  >
+                    {/* Profile */}
+                    <Link
+                      href="/profile"
+                      onClick={() => setShowAccountMenu(false)}
+                      className="d-flex align-items-center gap-3 px-3 py-3 text-dark text-decoration-none"
+                    >
+                      <i className="bi bi-person-circle fs-5 text-primary"></i>
+
+                      <div>
+                        <div className="fw-semibold">Profile</div>
+
+                        <small className="text-secondary">
+                          View your profile
+                        </small>
+                      </div>
+                    </Link>
+
+                    {/* Wishlist */}
+                    <Link
+                      href="/wishlist"
+                      onClick={() => setShowAccountMenu(false)}
+                      className="d-flex align-items-center gap-3 px-3 py-3 text-dark text-decoration-none border-top"
+                    >
+                      <i className="bi bi-heart fs-5 text-danger"></i>
+
+                      <div>
+                        <div className="fw-semibold">My Wishlist</div>
+
+                        <small className="text-secondary">Saved products</small>
+                      </div>
+                    </Link>
+
+                    {/* Admin */}
+                    {user.is_admin && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setShowAccountMenu(false)}
+                        className="d-flex align-items-center gap-3 px-3 py-3 text-dark text-decoration-none border-top"
+                      >
+                        <i className="bi bi-speedometer2 fs-5 text-primary"></i>
+
+                        <div className="fw-semibold">Admin Panel</div>
+                      </Link>
+                    )}
+
+                    {/* Logout */}
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="btn btn-link text-danger text-decoration-none w-100 text-start d-flex align-items-center gap-3 px-3 py-3 border-top"
+                    >
+                      <i className="bi bi-box-arrow-right fs-5"></i>
+
+                      <span className="fw-semibold">Logout</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <>
-                <Link className="nav-link text-white" href="/signin">
+                <Link
+                  className="text-white text-decoration-none fw-semibold d-none d-sm-inline"
+                  href="/signin"
+                >
                   Sign In
                 </Link>
 
-                <Link className="nav-link text-white" href="/signup">
+                <Link
+                  className="btn btn-outline-light btn-sm d-none d-sm-inline-block"
+                  href="/signup"
+                >
                   Sign Up
+                </Link>
+
+                {/* Mobile login icon */}
+                <Link
+                  href="/signin"
+                  className="text-white d-sm-none"
+                  aria-label="Sign In"
+                >
+                  <i className="bi bi-person-circle fs-5"></i>
                 </Link>
               </>
             )}
 
-            {/* Cart */}
-            <Link className="btn btn-cart position-relative" href="/cart">
-              <i className="bi bi-cart3 me-1"></i>
-              Cart
+            {/* ================= CART ================= */}
+            <Link
+              className="btn btn-warning position-relative d-flex align-items-center"
+              href="/cart"
+              aria-label="Cart"
+            >
+              <i className="bi bi-cart3 fs-5"></i>
+
+              <span className="d-none d-sm-inline ms-1">Cart</span>
+
               {cartCount > 0 && (
-                <span className="badge rounded-pill bg-danger ms-1">
+                <span
+                  className="badge rounded-pill bg-danger position-absolute"
+                  style={{
+                    top: "-9px",
+                    right: "-8px",
+                    fontSize: "10px",
+                  }}
+                >
                   {cartCount}
                 </span>
               )}

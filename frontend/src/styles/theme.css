@@ -34,27 +34,234 @@ body {
 }
 
 /* Navbar */
+/* ================================
+   SHOPSPHERE NAVBAR
+================================ */
+
 .ss-navbar {
   background: var(--ss-blue) !important;
   box-shadow: var(--ss-shadow);
+
+  width: 100%;
+  margin: 0;
+  padding-left: 0;
+  padding-right: 0;
+  box-sizing: border-box;
 }
+
+/* Bootstrap navbar flex-wrap override */
+.ss-navbar > .container-fluid {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+}
+
+/* Logo */
 .ss-navbar .navbar-brand {
+  color: #fff;
   font-weight: 800;
   letter-spacing: -0.5px;
   font-size: 1.4rem;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
+
+.ss-navbar .navbar-brand:hover {
+  color: #fff;
+}
+
+/* Search */
+.ss-navbar .form-control {
+  height: 42px;
+  border: none;
+  box-shadow: none;
+}
+
+.ss-navbar .form-control:focus {
+  box-shadow: none;
+}
+
+/* Search button */
+.ss-navbar .btn-primary {
+  height: 42px;
+  background: #087cff;
+  border: none;
+}
+
+.ss-navbar .btn-primary:hover {
+  background: #087cff;
+}
+
+/* Navigation links */
 .ss-navbar .nav-link {
   font-weight: 500;
 }
-.ss-navbar .btn-cart {
+
+/* Cart */
+.ss-navbar .btn-cart,
+.ss-navbar .btn-warning {
   background: var(--ss-orange);
   border: none;
   color: #fff;
   font-weight: 600;
+  flex-shrink: 0;
 }
-.ss-navbar .btn-cart:hover {
+
+.ss-navbar .btn-cart:hover,
+.ss-navbar .btn-warning:hover {
   background: var(--ss-orange-dark);
   color: #fff;
+}
+
+/* Top bar */
+.ss-topbar {
+  width: 100%;
+  margin: 0;
+  padding-left: 10px;
+  padding-right: 10px;
+  box-sizing: border-box;
+}
+
+.ss-topbar strong {
+  color: #ffd43b;
+}
+
+/* ================================
+   MOBILE NAVBAR
+================================ */
+
+@media (max-width: 575.98px) {
+  .ss-topbar {
+    width: 100%;
+    font-size: 10px;
+    line-height: 16px;
+    padding: 6px 8px !important;
+  }
+
+  .ss-navbar {
+    width: 100%;
+    min-height: 58px;
+  }
+
+  .ss-navbar > .container-fluid {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    padding-left: 7px !important;
+    padding-right: 7px !important;
+
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+  }
+
+  /* Logo icon stays visible */
+  .ss-navbar .navbar-brand {
+    flex: 0 0 auto;
+    margin-right: 4px;
+    padding: 0;
+  }
+
+  /* Search uses remaining space */
+  .ss-navbar .position-relative.flex-grow-1 {
+    flex: 1 1 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+
+    margin-left: 3px !important;
+    margin-right: 3px !important;
+  }
+
+  .ss-navbar .form-control {
+    height: 38px;
+    min-width: 0;
+    font-size: 12px;
+    padding-left: 12px;
+  }
+
+  .ss-navbar .btn-primary {
+    height: 38px;
+    padding-left: 11px;
+    padding-right: 11px;
+  }
+
+  /* Right-side navigation */
+  .ss-navbar > .container-fluid > .d-flex.align-items-center {
+    flex: 0 0 auto !important;
+    flex-wrap: nowrap !important;
+  }
+
+  /* Hide text on mobile */
+  .ss-navbar .d-none.d-sm-inline,
+  .ss-navbar .d-none.d-sm-inline-block,
+  .ss-navbar .d-none.d-md-flex,
+  .ss-navbar .d-none.d-lg-inline {
+    display: none !important;
+  }
+
+  /* Wishlist */
+  .ss-navbar a[href="/wishlist"] {
+    flex-shrink: 0;
+    width: 30px;
+    justify-content: center;
+  }
+
+  /* Account */
+  .ss-navbar .position-relative {
+    flex-shrink: 0;
+  }
+
+  /* Cart */
+  .ss-navbar .btn-cart,
+  .ss-navbar .btn-warning {
+    width: 38px;
+    height: 38px;
+    padding: 0 !important;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+  }
+}
+
+/* ================================
+   EXTRA SMALL DEVICES
+================================ */
+
+@media (max-width: 400px) {
+  .ss-navbar > .container-fluid {
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+    gap: 2px !important;
+  }
+
+  .ss-navbar .position-relative.flex-grow-1 {
+    margin-left: 2px !important;
+    margin-right: 2px !important;
+  }
+
+  .ss-navbar .btn-primary {
+    padding-left: 9px;
+    padding-right: 9px;
+  }
+
+  .ss-navbar a[href="/wishlist"] {
+    width: 26px;
+  }
+
+  .ss-navbar .btn-cart,
+  .ss-navbar .btn-warning {
+    width: 35px;
+  }
 }
 
 /* Hero banner */

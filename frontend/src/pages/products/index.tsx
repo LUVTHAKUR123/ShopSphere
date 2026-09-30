@@ -360,39 +360,54 @@ export default function ProductListing() {
       </div>
 
       {/* Special Offers - static, images to be added later */}
-      <div className={styles.sectionHeader}>
-        <h2>Special Offers</h2>
-        <a href="#">View All Offers →</a>
-      </div>
-      <div className={styles.offerGrid}>
-        {OFFERS.map((o) => (
-          <div className={styles.offerCard} key={o.title}>
-            <div>
-              <span
-                className={styles.offerBadge}
-                style={{ background: o.color }}
+      <div className="container-fluid px-0">
+        <div
+          className={`${styles.sectionHeader} d-flex justify-content-between align-items-center mb-4`}
+        >
+          <h2 className="mb-0">Special Offers</h2>
+
+          <a href="#" className="text-decoration-none">
+            View All Offers →
+          </a>
+        </div>
+
+        <div className="row g-3 g-md-4">
+          {OFFERS.map((o) => (
+            <div className="col-12 col-sm-6 col-lg-3" key={o.title}>
+              <div
+                className={`${styles.offerCard} h-100 d-flex align-items-center justify-content-between`}
               >
-                {o.label}
-              </span>
-              <h4>{o.title}</h4>
-              <p>{o.sub}</p>
-              <a href="#">Shop Now →</a>
+                <div className="flex-grow-1">
+                  <span
+                    className={`${styles.offerBadge} d-inline-block`}
+                    style={{ background: o.color }}
+                  >
+                    {o.label}
+                  </span>
+
+                  <h4 className="mt-2 mb-1">{o.title}</h4>
+
+                  <p className="mb-2">{o.sub}</p>
+
+                  <a href="#" className="text-decoration-none fw-semibold">
+                    Shop Now →
+                  </a>
+                </div>
+
+                <img
+                  src={o.image}
+                  alt={o.title}
+                  className="img-fluid flex-shrink-0 ms-2"
+                  style={{
+                    width: "80px",
+                    height: "80px",
+                    objectFit: "contain",
+                  }}
+                />
+              </div>
             </div>
-            {/* <i
-              className={`bi ${o.icon}`}
-              style={{ fontSize: "2.5rem", color: o.color }}
-            ></i> */}
-            <img
-              src={o.image}
-              alt={o.title}
-              style={{
-                width: "80px",
-                height: "80px",
-                objectFit: "contain",
-              }}
-            />
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Popular Brands - static */}
@@ -494,20 +509,36 @@ export default function ProductListing() {
       </div>
 
       {/* Newsletter - UI only, no backend endpoint wired up */}
-      <div className={styles.newsletter}>
-        <div>
-          <h3>Subscribe to Our Newsletter</h3>
-          <p>Get updates on new arrivals and exclusive offers</p>
+      <div className="container-fluid px-0">
+        <div className={`${styles.newsletter} row align-items-center g-4`}>
+          {/* Left Content */}
+          <div className="col-12 col-lg-6">
+            <h3 className="mb-2">Subscribe to Our Newsletter</h3>
+
+            <p className="mb-0">
+              Get updates on new arrivals and exclusive offers
+            </p>
+          </div>
+
+          {/* Right Form */}
+          <div className="col-12 col-lg-6">
+            <form
+              className="d-flex flex-column flex-sm-row gap-2"
+              onSubmit={(e) => e.preventDefault()}
+            >
+              <input
+                type="email"
+                className="form-control"
+                placeholder="Enter your email"
+                required
+              />
+
+              <button type="submit" className={`${styles.btnPrimary} btn px-4`}>
+                Subscribe
+              </button>
+            </form>
+          </div>
         </div>
-        <form
-          className={styles.newsletterForm}
-          onSubmit={(e) => e.preventDefault()}
-        >
-          <input type="email" placeholder="Enter your email" required />
-          <button type="submit" className={styles.btnPrimary}>
-            Subscribe
-          </button>
-        </form>
       </div>
     </div>
   );

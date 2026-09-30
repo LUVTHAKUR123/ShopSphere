@@ -389,9 +389,10 @@
 /* Special Offers */
 .offerGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 48px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+  width: 100%;
+  margin-bottom: 40px;
 }
 @media (max-width: 800px) {
   .offerGrid {
@@ -399,47 +400,29 @@
   }
 }
 .offerCard {
-  background: #eef1fc;
-  border-radius: 10px;
   padding: 20px;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  min-height: 150px;
+  border-radius: 16px;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 }
-.offerBadge {
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  color: #fff;
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 20px;
-}
+
 .offerCard h4 {
+  font-size: 18px;
   font-weight: 700;
-  font-size: 1rem;
-  color: #131a3a;
-  margin: 30px 0 2px;
 }
+
 .offerCard p {
-  font-size: 0.8rem;
-  color: #6b7280;
-  margin-bottom: 8px;
+  font-size: 14px;
+  color: #666;
 }
-.offerCard a {
-  color: #1a3fa0;
+
+.offerBadge {
+  padding: 5px 10px;
+  border-radius: 20px;
+  color: #fff;
+  font-size: 12px;
   font-weight: 600;
-  font-size: 0.85rem;
-  text-decoration: none;
-}
-.offerCard img {
-  max-width: 90px;
-  max-height: 90px;
-  object-fit: contain;
 }
 
 /* Popular Brands */
