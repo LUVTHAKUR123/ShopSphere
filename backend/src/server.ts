@@ -16,9 +16,16 @@ import cookieParser from "cookie-parser";
 
 const app = express();
 
+const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:3000")
+  .split(",")
+  .map((s) => s.trim());
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin: (origin, cb) => {
+      if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+      cb(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   }),
 );
