@@ -8,7 +8,7 @@ export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [remember, setRemember] = useState(true);
+  const [remember, setRemember] = useState(false);
   const [error, setError] = useState("");
   const { login } = useAuth();
   const router = useRouter();
@@ -17,8 +17,8 @@ export default function SignIn() {
     e.preventDefault();
     setError("");
     try {
-      const res = await api.post("/auth/signin", { email, password });
-      login(res.data.token, res.data.user);
+      const res = await api.post("/auth/signin", { email, password, remember });
+      login(res.data.user);
       router.push("/products");
     } catch (err: any) {
       setError(err.response?.data?.message || "Sign in failed");

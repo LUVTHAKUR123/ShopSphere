@@ -31,7 +31,7 @@ export default function SignUp() {
 
     try {
       const res = await api.post("/auth/signup", { name, email, password });
-      login(res.data.token, res.data.user);
+      login(res.data.user);
       router.push("/products");
     } catch (err: any) {
       setError(err.response?.data?.message || "Sign up failed");

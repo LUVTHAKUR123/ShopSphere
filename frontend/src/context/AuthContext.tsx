@@ -6,65 +6,53 @@ import {
   ReactNode,
 } from "react";
 
-import { User } from "@/lib/api";
+import api, { User } from "@/lib/api";
 
 interface AuthContextType {
   user: User | null;
-  token: string | null;
   loading: boolean;
-  login: (token: string, user: User) => void;
-  logout: () => void;
+  login: (user: User) => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
-  token: null,
   loading: true,
   login: () => {},
-  logout: () => {},
+  logout: async () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Cookie se session restore
   useEffect(() => {
-    try {
-      const t = localStorage.getItem("token");
-      const u = localStorage.getItem("user");
+    // // purana localStorage token/user ab use nahi hota
+    // localStorage.removeItem("token");
+    // localStorage.removeItem("user");
 
-      if (t && u) {
-        setToken(t);
-        setUser(JSON.parse(u));
-      }
-    } catch (error) {
-      console.error("Auth restore error:", error);
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-    } finally {
-      setLoading(false);
-    }
+    api
+      .get("/auth/profile")
+      .then((res) => setUser(res.data))
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false));
   }, []);
 
-  function login(newToken: string, newUser: User) {
-    localStorage.setItem("token", newToken);
-    localStorage.setItem("user", JSON.stringify(newUser));
-
-    setToken(newToken);
+  function login(newUser: User) {
     setUser(newUser);
   }
 
-  function logout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-
-    setToken(null);
-    setUser(null);
+  async function logout() {
+    try {
+      await api.post("/auth/logout");
+    } finally {
+      setUser(null);
+    }
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
