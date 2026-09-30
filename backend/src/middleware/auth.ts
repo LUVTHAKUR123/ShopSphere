@@ -8,15 +8,13 @@ interface JwtPayload {
 
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
   try {
-    const authHeader = req.headers.authorization;
+    const token = req.cookies?.token;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!token) {
       return res.status(401).json({
         message: "Authentication required",
       });
     }
-
-    const token = authHeader.substring(7);
 
     const secret = process.env.JWT_SECRET;
 

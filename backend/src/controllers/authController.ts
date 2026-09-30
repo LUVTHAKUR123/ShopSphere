@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 
 import { User } from "../models";
 
-const generateToken = (user: User): string => {
+const generateToken = (user: User, expiresIn: string = "7d"): string => {
   const secret = process.env.JWT_SECRET;
 
   if (!secret) {
@@ -18,11 +18,26 @@ const generateToken = (user: User): string => {
     },
     secret,
     {
-      expiresIn: "7d",
-    },
+      expiresIn,
+    } as jwt.SignOptions,
   );
 };
 
+const isProd = process.env.NODE_ENV === "production";
+const cookieBase = {
+  httpOnly: true,
+  secure: isProd,
+  sameSite: (isProd ? "none" : "lax") as "none" | "lax",
+  path: "/",
+};
+
+function setAuthCookie(res: Response, token: string, remember: boolean) {
+  res.cookie("token", token, {
+    ...cookieBase,
+    // remember = persistent cookie, warna session cookie (browser band = logout)
+    ...(remember ? { maxAge: 30 * 24 * 60 * 60 * 1000 } : {}),
+  });
+}
 // SIGNUP
 export async function signup(req: Request, res: Response) {
   const { name, email, password } = req.body;
@@ -61,11 +76,11 @@ export async function signup(req: Request, res: Response) {
     });
 
     // Generate JWT
-    const token = generateToken(user);
+    const token = generateToken(user, "7d");
+    setAuthCookie(res, token, true);
 
     return res.status(201).json({
       token,
-
       user: {
         id: user.id,
         name: user.name,
@@ -84,7 +99,7 @@ export async function signup(req: Request, res: Response) {
 
 // SIGNIN
 export async function signin(req: Request, res: Response) {
-  const { email, password } = req.body;
+  const { email, password, remember } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({
@@ -115,9 +130,11 @@ export async function signin(req: Request, res: Response) {
       });
     }
 
-    // Generate JWT
-    const token = generateToken(user);
+    const rememberMe = Boolean(remember);
 
+    // Generate JWT
+    const token = generateToken(user, rememberMe ? "30d" : "7d");
+    setAuthCookie(res, token, remember);
     return res.status(200).json({
       token,
 
@@ -158,4 +175,9 @@ export async function getProfile(req: Request, res: Response) {
       message: "Server error",
     });
   }
+}
+
+export async function logout(_req: Request, res: Response) {
+  res.clearCookie("token", cookieBase);
+  return res.status(200).json({ message: "Logged out" });
 }
