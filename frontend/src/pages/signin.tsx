@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { toast } from "react-toastify";
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
@@ -20,8 +21,10 @@ export default function SignIn() {
       const res = await api.post("/auth/signin", { email, password, remember });
       login(res.data.user);
       router.push("/products");
+      toast.success("Signed in successfully!");
     } catch (err: any) {
       setError(err.response?.data?.message || "Sign in failed");
+      toast.error(err.response?.data?.message || "Sign in failed"); 
     }
   }
 

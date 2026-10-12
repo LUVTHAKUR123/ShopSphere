@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import api, { CartItem } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
+import { toast } from "react-toastify";
 export default function Cart() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -44,6 +45,7 @@ export default function Cart() {
 
   async function removeItem(id: number) {
     await api.delete(`/cart/${id}`);
+    toast.success("Item removed from cart");
     fetchCart();
   }
 

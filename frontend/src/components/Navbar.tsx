@@ -13,13 +13,17 @@ export default function Navbar() {
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const { user, logout, loading } = useAuth();
   const router = useRouter();
+
   const accountMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target;
+
       if (
+        target instanceof Node &&
         accountMenuRef.current &&
-        !accountMenuRef.current.contains(event.target as Node)
+        !accountMenuRef.current.contains(target)
       ) {
         setShowAccountMenu(false);
       }
@@ -381,7 +385,7 @@ export default function Navbar() {
                 }}
               />
             ) : user ? (
-              <div className="position-relative">
+              <div className="position-relative" ref={accountMenuRef}>
                 <button
                   type="button"
                   className="btn text-white p-1 d-flex align-items-center gap-1"
@@ -435,26 +439,26 @@ export default function Navbar() {
                     <Link
                       href="/wishlist"
                       onClick={() => setShowAccountMenu(false)}
-                      className="d-flex align-items-center gap-3 px-3 py-3 text-dark text-decoration-none border-top"
+                      className="d-flex align-items-center gap-2 px-3 py-3 text-dark text-decoration-none border-top"
                     >
-                      <i className="bi bi-heart fs-5 text-danger"></i>
+                      <i className="bi bi-heart fs-5 text-danger flex-shrink-0"></i>
 
-                      <div>
+                      <div className="flex-shrink-0 text-nowrap">
                         <div className="fw-semibold">My Wishlist</div>
-
                         <small className="text-secondary">Saved products</small>
                       </div>
                     </Link>
 
                     {/* Admin */}
-                    {user.is_admin && (
+
+                    {/* Admin */}
+                    {user?.is_admin && (
                       <Link
                         href="/admin"
                         onClick={() => setShowAccountMenu(false)}
                         className="d-flex align-items-center gap-3 px-3 py-3 text-dark text-decoration-none border-top"
                       >
                         <i className="bi bi-speedometer2 fs-5 text-primary"></i>
-
                         <div className="fw-semibold">Admin Panel</div>
                       </Link>
                     )}

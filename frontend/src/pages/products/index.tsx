@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/router";
 import styles from "./ProductListing.module.css";
 import CategoriesSection from "../../pages/category/category";
+import { toast } from "react-toastify";
 const CATEGORIES = [
   { name: "Electronics", icon: "bi-headphones" },
   { name: "Fashion", icon: "bi-bag-fill" },
@@ -139,6 +140,7 @@ export default function ProductListing() {
   async function handleWishlist(productId: number) {
     if (!user) {
       router.push("/signin");
+      toast.info("Please sign in to manage your wishlist.");
       return;
     }
 
@@ -149,6 +151,7 @@ export default function ProductListing() {
         // Remove product from wishlist
         await api.delete(`/wishlist/${productId}`);
         setWishlistIds((ids) => ids.filter((id) => id !== productId));
+        toast.success("Product removed from wishlist!");
       } else {
         // Add product to wishlist
         await api.post("/wishlist", {
@@ -156,6 +159,7 @@ export default function ProductListing() {
         });
         window.dispatchEvent(new Event("wishlistUpdated"));
         setWishlistIds((prev) => [...prev, productId]);
+        toast.success("Product added to wishlist!");
       }
     } catch (error: any) {
       console.error(
@@ -164,6 +168,10 @@ export default function ProductListing() {
       );
 
       alert(
+        error.response?.data?.message ||
+          "Wishlist update failed. Please try again.",
+      );
+      toast.error(
         error.response?.data?.message ||
           "Wishlist update failed. Please try again.",
       );
@@ -189,13 +197,16 @@ export default function ProductListing() {
   async function handleQuickAdd(productId: number) {
     if (!user) {
       router.push("/signin");
+      toast.info("Please sign in to add products to your cart.");
       return;
     }
     try {
       await api.post("/cart", { product_id: productId, quantity: 1 });
       window.dispatchEvent(new Event("cartUpdated"));
+      toast.success("Product added to cart!");
     } catch (err) {
       console.error(err);
+      toast.error("Failed to add product to cart.");
     }
   }
 

@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import api from "@/lib/api";
 import styles from "./wishlist.module.css";
 import { useAuth } from "@/context/AuthContext";
+import { toast } from "react-toastify";
 
 interface Product {
   id: number;
@@ -53,14 +54,17 @@ export default function Wishlist() {
       await api.delete(`/wishlist/${productId}`);
 
       setItems((prev) => prev.filter((item) => item.product_id !== productId));
+      toast.success("Product removed from wishlist!");
     } catch (error) {
       console.error("Remove wishlist error:", error);
+      toast.error("Failed to remove product from wishlist.");
     }
   }
 
   async function handleAddToCart(productId: number) {
     if (!user) {
       router.push("/signin");
+      toast.info("Please sign in to add products to your cart.");
       return;
     }
 
@@ -70,9 +74,12 @@ export default function Wishlist() {
         quantity: 1,
       });
       window.dispatchEvent(new Event("cartUpdated"));
-      alert("Product added to cart!");
+
+      // alert("Product added to cart!");
+      toast.success("Product added to cart!");
     } catch (error) {
       console.error("Add to cart error:", error);
+      toast.error("Failed to add product to cart.");
     }
   }
 

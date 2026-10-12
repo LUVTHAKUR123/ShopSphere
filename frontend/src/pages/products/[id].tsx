@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import api, { Product } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { toast } from "react-toastify";
 
 export default function ProductDetail() {
   const router = useRouter();
@@ -19,14 +20,17 @@ export default function ProductDetail() {
   async function handleAddToCart() {
     if (!user) {
       router.push("/signin");
+      toast.info("Please sign in to add products to your cart.");
       return;
     }
     try {
       await api.post("/cart", { product_id: product?.id, quantity: quantity });
       window.dispatchEvent(new Event("cartUpdated"));
       setMessage("Added to cart!");
+      toast.success("Product added to cart!");
     } catch (err) {
       setMessage("Failed to add to cart.");
+      toast.error("Failed to add product to cart.");
     }
   }
 
