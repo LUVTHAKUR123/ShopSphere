@@ -1,45 +1,72 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "react-toastify";
+import { signUpSchema } from "@/validations/validationSchemas";
+
+type SignUpFormValues = {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  agreed: boolean;
+};
 
 export default function SignUp() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [agreed, setAgreed] = useState(true);
-  const [error, setError] = useState("");
+  const [serverError, setServerError] = useState("");
+
   const { login } = useAuth();
   const router = useRouter();
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setError,
+    clearErrors,
+    formState: { errors, isSubmitting },
+  } = useForm<SignUpFormValues>({
+    resolver: yupResolver(signUpSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      agreed: true,
+    },
+    mode: "onBlur",
+  });
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-    if (!agreed) {
-      setError("Please agree to the Terms of Service and Privacy Policy");
-      return;
-    }
+  const passwordValue = watch("password");
+
+  const onSubmit = async (values: SignUpFormValues) => {
+    setServerError("");
+    clearErrors("root");
 
     try {
-      const res = await api.post("/auth/signup", { name, email, password });
+      const res = await api.post("/auth/signup", {
+        name: values.name.trim(),
+        email: values.email.trim(),
+        password: values.password,
+      });
+
       login(res.data.user);
-      router.push("/products");
       toast.success("Signed up successfully!");
+      await router.push("/products");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Sign up failed");
-      toast.error(err.response?.data?.message || "Sign up failed");
+      const message = err.response?.data?.message || "Sign up failed";
+
+      setServerError(message);
+      setError("root.server", { message });
+      toast.error(message);
     }
-  }
+  };
 
   return (
     <div className="ss-split-wrap ss-auth-shell">
@@ -48,8 +75,10 @@ export default function SignUp() {
         <span className="ss-badge-pill">
           <i className="bi bi-star-fill"></i> Welcome to ShopSphere
         </span>
+
         <h1>Create Your Account</h1>
         <h1 className="accent">and Start Shopping!</h1>
+
         <p>
           Join ShopSphere today and explore a world of amazing products,
           exclusive offers and great savings.
@@ -64,6 +93,7 @@ export default function SignUp() {
             <span>Get access to exclusive deals and discounts</span>
           </div>
         </div>
+
         <div className="ss-feature-item">
           <div className="icon-badge">
             <i className="bi bi-shield-check"></i>
@@ -73,6 +103,7 @@ export default function SignUp() {
             <span>Your data is safe with us</span>
           </div>
         </div>
+
         <div className="ss-feature-item">
           <div className="icon-badge">
             <i className="bi bi-truck"></i>
@@ -82,6 +113,7 @@ export default function SignUp() {
             <span>Quick and reliable delivery at your doorstep</span>
           </div>
         </div>
+
         <div className="ss-feature-item">
           <div className="icon-badge">
             <i className="bi bi-heart-fill"></i>
@@ -91,20 +123,6 @@ export default function SignUp() {
             <span>Save your favorite items for later</span>
           </div>
         </div>
-
-        {/* <div className="ss-illustration">
-          <div className="bag light">
-            <i className="bi bi-gift"></i>
-          </div>
-          <div className="bag">
-            <i className="bi bi-bag-heart-fill"></i>
-          </div>
-          <div className="phone">
-            <div className="phone-screen">
-              <i className="bi bi-shop"></i>
-            </div>
-          </div>
-        </div> */}
       </div>
 
       {/* Right side */}
@@ -113,100 +131,187 @@ export default function SignUp() {
           <h2>Sign Up</h2>
           <p>Create an account to get started with ShopSphere</p>
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit(onSubmit)} noValidate>
+            {/* Full Name */}
             <div className="ss-input-group">
-              <label>Full Name</label>
+              <label htmlFor="name">Full Name</label>
               <i className="bi bi-person icon-left"></i>
+
               <input
-                className="form-control"
+                id="name"
+                type="text"
+                className={`form-control ${errors.name ? "is-invalid" : ""}`}
                 placeholder="Enter your full name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
+                autoComplete="name"
+                aria-invalid={!!errors.name}
+                aria-describedby={errors.name ? "name-error" : undefined}
+                {...register("name", {
+                  onChange: () => setServerError(""),
+                })}
               />
+
+              {errors.name && (
+                <div id="name-error" className="invalid-feedback d-block">
+                  {errors.name.message}
+                </div>
+              )}
             </div>
 
+            {/* Email */}
             <div className="ss-input-group">
-              <label>Email Address</label>
+              <label htmlFor="email">Email Address</label>
               <i className="bi bi-envelope icon-left"></i>
+
               <input
+                id="email"
                 type="email"
-                className="form-control"
+                className={`form-control ${errors.email ? "is-invalid" : ""}`}
                 placeholder="Enter your email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+                autoComplete="email"
+                aria-invalid={!!errors.email}
+                aria-describedby={errors.email ? "email-error" : undefined}
+                {...register("email", {
+                  onChange: () => setServerError(""),
+                })}
               />
+
+              {errors.email && (
+                <div id="email-error" className="invalid-feedback d-block">
+                  {errors.email.message}
+                </div>
+              )}
             </div>
 
+            {/* Password */}
             <div className="ss-input-group">
-              <label>Password</label>
+              <label htmlFor="password">Password</label>
               <i className="bi bi-lock icon-left"></i>
+
               <input
+                id="password"
                 type={showPassword ? "text" : "password"}
-                className="form-control"
+                className={`form-control ${
+                  errors.password ? "is-invalid" : ""
+                }`}
                 placeholder="Create a password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
+                autoComplete="new-password"
+                aria-invalid={!!errors.password}
+                aria-describedby={
+                  errors.password ? "password-error" : undefined
+                }
+                {...register("password", {
+                  onChange: () => setServerError(""),
+                })}
               />
+
               <button
                 type="button"
                 className="toggle-eye"
-                onClick={() => setShowPassword(!showPassword)}
-                aria-label="Toggle password visibility"
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 <i
                   className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`}
                 ></i>
               </button>
+
+              {errors.password && (
+                <div id="password-error" className="invalid-feedback d-block">
+                  {errors.password.message}
+                </div>
+              )}
             </div>
 
+            {/* Confirm Password */}
             <div className="ss-input-group">
-              <label>Confirm Password</label>
+              <label htmlFor="confirmPassword">Confirm Password</label>
               <i className="bi bi-lock icon-left"></i>
+
               <input
+                id="confirmPassword"
                 type={showConfirm ? "text" : "password"}
-                className="form-control"
+                className={`form-control ${
+                  errors.confirmPassword ? "is-invalid" : ""
+                }`}
                 placeholder="Confirm your password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
+                autoComplete="new-password"
+                aria-invalid={!!errors.confirmPassword}
+                aria-describedby={
+                  errors.confirmPassword ? "confirm-password-error" : undefined
+                }
+                {...register("confirmPassword", {
+                  onChange: () => setServerError(""),
+                })}
               />
+
               <button
                 type="button"
                 className="toggle-eye"
-                onClick={() => setShowConfirm(!showConfirm)}
-                aria-label="Toggle confirm password visibility"
+                onClick={() => setShowConfirm((prev) => !prev)}
+                aria-label={
+                  showConfirm
+                    ? "Hide confirm password"
+                    : "Show confirm password"
+                }
               >
                 <i
                   className={`bi ${showConfirm ? "bi-eye-slash" : "bi-eye"}`}
                 ></i>
               </button>
+
+              {errors.confirmPassword && (
+                <div
+                  id="confirm-password-error"
+                  className="invalid-feedback d-block"
+                >
+                  {errors.confirmPassword.message}
+                </div>
+              )}
             </div>
 
+            {/* Terms and Privacy */}
             <div
               className="ss-form-row"
               style={{ justifyContent: "flex-start" }}
             >
               <label className="d-flex align-items-center gap-2 mb-0">
-                <input
-                  type="checkbox"
-                  checked={agreed}
-                  onChange={(e) => setAgreed(e.target.checked)}
-                />
-                I agree to the <a href="#">Terms of Service</a> and{" "}
-                <a href="#">Privacy Policy</a>
+                <input type="checkbox" {...register("agreed")} />
+
+                <span>
+                  I agree to the <Link href="/terms">Terms of Service</Link> and{" "}
+                  <Link href="/privacy-policy">Privacy Policy</Link>
+                </span>
               </label>
             </div>
 
-            {error && <p className="text-danger">{error}</p>}
+            {errors.agreed && (
+              <p className="text-danger mt-2 mb-2">{errors.agreed.message}</p>
+            )}
 
+            {/* API Error */}
+            {serverError && (
+              <div className="alert alert-danger py-2 mt-3" role="alert">
+                {serverError}
+              </div>
+            )}
+
+            {/* Submit */}
             <button
               type="submit"
               className="btn ss-btn-primary text-white w-100 py-2"
+              disabled={isSubmitting}
             >
-              Create Account
+              {isSubmitting ? (
+                <>
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    aria-hidden="true"
+                  ></span>
+                  Creating Account...
+                </>
+              ) : (
+                "Create Account"
+              )}
             </button>
           </form>
 
@@ -216,18 +321,15 @@ export default function SignUp() {
             <button type="button" className="ss-social-btn">
               <i className="bi bi-google"></i> Google
             </button>
+
             <button type="button" className="ss-social-btn">
               <i className="bi bi-facebook"></i> Facebook
             </button>
+
             <button type="button" className="ss-social-btn">
               <i className="bi bi-apple"></i> Apple
             </button>
           </div>
-
-          {/* <p className="ss-secure-note mb-3">
-            <i className="bi bi-shield-lock me-1"></i>
-            Secure registration with 256-bit SSL encryption
-          </p> */}
 
           <p className="text-center mb-0">
             Already have an account? <Link href="/signin">Sign In</Link>

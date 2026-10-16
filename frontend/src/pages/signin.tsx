@@ -1,32 +1,52 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import { useFormik } from "formik";
 import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "react-toastify";
+import { signInSchema } from "@/validations/validationSchemas";
 
 export default function SignIn() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [remember, setRemember] = useState(false);
   const [error, setError] = useState("");
+
   const { login } = useAuth();
   const router = useRouter();
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-    try {
-      const res = await api.post("/auth/signin", { email, password, remember });
-      login(res.data.user);
-      router.push("/products");
-      toast.success("Signed in successfully!");
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Sign in failed");
-      toast.error(err.response?.data?.message || "Sign in failed"); 
-    }
-  }
+  const formik = useFormik({
+    initialValues: {
+      email: "",
+      password: "",
+      remember: false,
+    },
+
+    validationSchema: signInSchema,
+
+    onSubmit: async (values, { setSubmitting }) => {
+      setError("");
+
+      try {
+        const res = await api.post("/auth/signin", {
+          email: values.email.trim(),
+          password: values.password,
+          remember: values.remember,
+        });
+
+        login(res.data.user);
+
+        toast.success("Signed in successfully!");
+        await router.push("/products");
+      } catch (err: any) {
+        const message = err.response?.data?.message || "Sign in failed";
+
+        setError(message);
+        toast.error(message);
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
 
   return (
     <div className="ss-split-wrap ss-auth-shell">
@@ -34,6 +54,7 @@ export default function SignIn() {
       <div className="ss-split-left">
         <h1>Welcome Back!</h1>
         <h1 className="accent">Glad to See You Again 👋</h1>
+
         <p>
           Sign in to your account and explore a world of amazing products,
           exclusive deals and faster checkout.
@@ -48,6 +69,7 @@ export default function SignIn() {
             <span>Access members-only offers &amp; discounts</span>
           </div>
         </div>
+
         <div className="ss-feature-item">
           <div className="icon-badge">
             <i className="bi bi-truck"></i>
@@ -57,6 +79,7 @@ export default function SignIn() {
             <span>Saved addresses &amp; payment methods</span>
           </div>
         </div>
+
         <div className="ss-feature-item">
           <div className="icon-badge">
             <i className="bi bi-heart-fill"></i>
@@ -66,6 +89,7 @@ export default function SignIn() {
             <span>Save your favorite items for later</span>
           </div>
         </div>
+
         <div className="ss-feature-item">
           <div className="icon-badge">
             <i className="bi bi-shield-check"></i>
@@ -75,20 +99,6 @@ export default function SignIn() {
             <span>Your data is always safe with us</span>
           </div>
         </div>
-        {/* 
-        <div className="ss-illustration">
-          <div className="bag light">
-            <i className="bi bi-bag"></i>
-          </div>
-          <div className="bag">
-            <i className="bi bi-cart3"></i>
-          </div>
-          <div className="phone">
-            <div className="phone-screen">
-              <i className="bi bi-bag-heart-fill"></i>
-            </div>
-          </div>
-        </div> */}
       </div>
 
       {/* Right side */}
@@ -97,62 +107,130 @@ export default function SignIn() {
           <h2>Sign In</h2>
           <p>Welcome back! Please sign in to continue</p>
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={formik.handleSubmit} noValidate>
+            {/* Email */}
             <div className="ss-input-group">
-              <label>Email Address</label>
+              <label htmlFor="email">Email Address</label>
+
               <i className="bi bi-envelope icon-left"></i>
+
               <input
+                id="email"
+                name="email"
                 type="email"
-                className="form-control"
+                className={`form-control ${
+                  formik.touched.email && formik.errors.email
+                    ? "is-invalid"
+                    : ""
+                }`}
                 placeholder="Enter your email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+                value={formik.values.email}
+                onChange={(e) => {
+                  setError("");
+                  formik.handleChange(e);
+                }}
+                onBlur={formik.handleBlur}
+                autoComplete="email"
+                aria-invalid={Boolean(
+                  formik.touched.email && formik.errors.email,
+                )}
+                aria-describedby="email-error"
               />
+
+              {formik.touched.email && formik.errors.email && (
+                <div id="email-error" className="invalid-feedback d-block">
+                  {formik.errors.email}
+                </div>
+              )}
             </div>
 
+            {/* Password */}
             <div className="ss-input-group">
-              <label>Password</label>
+              <label htmlFor="password">Password</label>
+
               <i className="bi bi-lock icon-left"></i>
+
               <input
+                id="password"
+                name="password"
                 type={showPassword ? "text" : "password"}
-                className="form-control"
+                className={`form-control ${
+                  formik.touched.password && formik.errors.password
+                    ? "is-invalid"
+                    : ""
+                }`}
                 placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
+                value={formik.values.password}
+                onChange={(e) => {
+                  setError("");
+                  formik.handleChange(e);
+                }}
+                onBlur={formik.handleBlur}
+                autoComplete="current-password"
+                aria-invalid={Boolean(
+                  formik.touched.password && formik.errors.password,
+                )}
+                aria-describedby="password-error"
               />
+
               <button
                 type="button"
                 className="toggle-eye"
-                onClick={() => setShowPassword(!showPassword)}
-                aria-label="Toggle password visibility"
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 <i
                   className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`}
                 ></i>
               </button>
+
+              {formik.touched.password && formik.errors.password && (
+                <div id="password-error" className="invalid-feedback d-block">
+                  {formik.errors.password}
+                </div>
+              )}
             </div>
 
+            {/* Remember me and Forgot Password */}
             <div className="ss-form-row">
               <label className="d-flex align-items-center gap-2 mb-0">
                 <input
                   type="checkbox"
-                  checked={remember}
-                  onChange={(e) => setRemember(e.target.checked)}
+                  name="remember"
+                  checked={formik.values.remember}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
                 />
                 Remember me
               </label>
-              <a href="#">Forgot Password?</a>
+
+              <Link href="/forgot-password">Forgot Password?</Link>
             </div>
 
-            {error && <p className="text-danger">{error}</p>}
+            {/* API error */}
+            {error && (
+              <div className="alert alert-danger py-2 mt-3" role="alert">
+                {error}
+              </div>
+            )}
 
+            {/* Submit button */}
             <button
               type="submit"
               className="btn ss-btn-primary text-white w-100 py-2"
+              disabled={formik.isSubmitting}
             >
-              Sign In
+              {formik.isSubmitting ? (
+                <>
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    aria-hidden="true"
+                  ></span>
+                  Signing In...
+                </>
+              ) : (
+                "Sign In"
+              )}
             </button>
           </form>
 
@@ -162,9 +240,11 @@ export default function SignIn() {
             <button type="button" className="ss-social-btn">
               <i className="bi bi-google"></i> Google
             </button>
+
             <button type="button" className="ss-social-btn">
               <i className="bi bi-facebook"></i> Facebook
             </button>
+
             <button type="button" className="ss-social-btn">
               <i className="bi bi-apple"></i> Apple
             </button>
